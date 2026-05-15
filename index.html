@@ -1,155 +1,94 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lyra — Setlist Manager</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@200;300;400;500&display=swap"
-        rel="stylesheet" />
-    <link rel="stylesheet" href="assets/css/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Lyra · Setlist Manager</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-    <div class="layout">
-
-        <!-- HEADER -->
-        <header>
-            <div class="header-left">
-                <svg class="logo-icon" viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="40" cy="10" r="5" fill="#FAC775" />
-                    <line x1="40" y1="3" x2="40" y2="0" stroke="#FAC775" stroke-width="1" opacity="0.7" />
-                    <line x1="40" y1="17" x2="40" y2="20" stroke="#FAC775" stroke-width="1" opacity="0.7" />
-                    <line x1="33" y1="10" x2="30" y2="10" stroke="#FAC775" stroke-width="1" opacity="0.7" />
-                    <line x1="47" y1="10" x2="50" y2="10" stroke="#FAC775" stroke-width="1" opacity="0.7" />
-                    <line x1="40" y1="15" x2="26" y2="28" stroke="#BA7517" stroke-width="0.8" opacity="0.6" />
-                    <line x1="40" y1="15" x2="54" y2="28" stroke="#BA7517" stroke-width="0.8" opacity="0.6" />
-                    <line x1="26" y1="28" x2="54" y2="28" stroke="#BA7517" stroke-width="0.7" opacity="0.5" />
-                    <circle cx="26" cy="28" r="3" fill="#EF9F27" />
-                    <circle cx="54" cy="28" r="3" fill="#EF9F27" />
-                    <path d="M26 28 C18 22 14 13 16 6 L24 3" stroke="#BA7517" stroke-width="2.5" stroke-linecap="round"
-                        fill="none" />
-                    <path d="M54 28 C62 22 66 13 64 6 L56 3" stroke="#BA7517" stroke-width="2.5" stroke-linecap="round"
-                        fill="none" />
-                    <rect x="14" y="0" width="52" height="7" rx="3.5" fill="#412402" stroke="#BA7517"
-                        stroke-width="1" />
-                    <circle cx="20" cy="3.5" r="3" fill="#EF9F27" />
-                    <circle cx="33" cy="1.5" r="3" fill="#EF9F27" />
-                    <circle cx="40" cy="1" r="3.5" fill="#EF9F27" />
-                    <circle cx="47" cy="1.5" r="3" fill="#EF9F27" />
-                    <circle cx="60" cy="3.5" r="3" fill="#EF9F27" />
-                    <path
-                        d="M26 28 C18 34 15 46 16 56 C17 68 23 78 30 84 C34 88 38 90 40 90 C42 90 46 88 50 84 C57 78 63 68 64 56 C65 46 62 34 54 28 Z"
-                        fill="#1A1408" stroke="#854F0B" stroke-width="1.2" />
-                    <ellipse cx="40" cy="62" rx="10" ry="13" fill="#0E0C07" stroke="#854F0B" stroke-width="0.8" />
-                    <line x1="20" y1="7" x2="22" y2="88" stroke="#FAC775" stroke-width="0.9" opacity="0.7" />
-                    <line x1="33" y1="4" x2="33" y2="89" stroke="#FAC775" stroke-width="0.9" opacity="0.8" />
-                    <line x1="40" y1="4" x2="40" y2="90" stroke="#FAC775" stroke-width="1.1" opacity="0.9" />
-                    <line x1="47" y1="4" x2="47" y2="89" stroke="#FAC775" stroke-width="0.9" opacity="0.8" />
-                    <line x1="60" y1="7" x2="58" y2="88" stroke="#FAC775" stroke-width="0.9" opacity="0.7" />
-                    <path d="M22 88 C22 88 27 95 40 96 C53 95 58 88 58 88" stroke="#BA7517" stroke-width="1.2"
-                        fill="none" stroke-linecap="round" />
-                </svg>
-                <div class="logo-text">
-                    <div class="logo-name">LYRA</div>
-                    <div class="logo-sub">SETLIST MANAGER</div>
-                </div>
+<div class="app">
+    <!-- header -->
+    <div class="header">
+        <div class="logo-area">
+            <svg class="logo-icon" viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="30" cy="12" r="4" fill="#FAC775"/>
+                <path d="M30 4 L30 0 M30 20 L30 24 M21 12 L18 12 M39 12 L42 12" stroke="#FAC775" stroke-width="1.2" opacity="0.7"/>
+                <rect x="10" y="0" width="40" height="6" rx="3" fill="#412402" stroke="#BA7517" stroke-width="0.8"/>
+                <circle cx="16" cy="3" r="2.5" fill="#EF9F27"/>
+                <circle cx="30" cy="2" r="2.5" fill="#EF9F27"/>
+                <circle cx="44" cy="3" r="2.5" fill="#EF9F27"/>
+                <path d="M18 20 C10 26 8 42 12 58 C16 72 24 82 30 84 C36 82 44 72 48 58 C52 42 50 26 42 20 Z" fill="#1A1408" stroke="#854F0B" stroke-width="1"/>
+                <ellipse cx="30" cy="54" rx="9" ry="12" fill="#0E0C07" stroke="#854F0B" stroke-width="0.7"/>
+                <line x1="16" y1="6" x2="18" y2="72" stroke="#FAC775" stroke-width="0.7" opacity="0.6"/>
+                <line x1="30" y1="4" x2="30" y2="74" stroke="#FAC775" stroke-width="0.9" opacity="0.7"/>
+                <line x1="44" y1="6" x2="42" y2="72" stroke="#FAC775" stroke-width="0.7" opacity="0.6"/>
+            </svg>
+            <div class="logo-text">
+                <h1>LYRA</h1>
+                <p>SETLIST MANAGER</p>
             </div>
-            <div class="header-right">
-                <div class="badge">v1.0</div>
-                <button class="header-btn" title="Configurações">⚙</button>
-            </div>
-        </header>
-
-        <!-- SIDEBAR -->
-        <aside>
-            <div class="sidebar-label">MENU</div>
-            <div class="nav-item active"><span class="nav-icon">♩</span>Minha Setlist</div>
-            <div class="nav-item"><span class="nav-icon">◫</span>Setlists</div>
-            <div class="nav-item"><span class="nav-icon">↺</span>Histórico</div>
-            <div class="sidebar-label">CONTA</div>
-            <div class="nav-item"><span class="nav-icon">◎</span>Perfil</div>
-            <div class="nav-item"><span class="nav-icon">⚙</span>Configurações</div>
-        </aside>
-
-        <!-- MAIN -->
-        <main>
-
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title">Minha <span>Setlist</span></h1>
-                    <p class="page-subtitle">Organize sua apresentação com precisão</p>
-                </div>
-                <button class="btn-primary" onclick="focusInput()">+ Nova música</button>
-            </div>
-
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-number" id="stat-total">0</div>
-                    <div class="stat-label">TOTAL</div>
-                    <div class="stat-bar">
-                        <div class="stat-bar-fill" id="bar-total" style="width:0%"></div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="stat-played">0</div>
-                    <div class="stat-label">TOCADAS</div>
-                    <div class="stat-bar">
-                        <div class="stat-bar-fill" id="bar-played" style="width:0%"></div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="stat-remaining">0</div>
-                    <div class="stat-label">RESTANTES</div>
-                    <div class="stat-bar">
-                        <div class="stat-bar-fill" id="bar-remaining" style="width:0%"></div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="stat-pct">0%</div>
-                    <div class="stat-label">PROGRESSO</div>
-                    <div class="stat-bar">
-                        <div class="stat-bar-fill" id="bar-pct" style="width:0%"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="add-section">
-                <div class="add-form">
-                    <div class="input-wrap">
-                        <span class="input-icon">♩</span>
-                        <input class="add-input" id="music-input" type="text" placeholder="Nome da música..."
-                            maxlength="80" />
-                    </div>
-                    <button class="btn-add" id="add-btn">Adicionar</button>
-                </div>
-            </div>
-
-            <div class="section-head">
-                <h2 class="section-title">Lista de músicas</h2>
-                <span class="section-count" id="section-count">0 músicas</span>
-            </div>
-
-            <ul id="music-list"></ul>
-
-            <div class="empty" id="empty-state">
-                <div class="empty-icon">♪</div>
-                <p class="empty-text">Nenhuma música ainda.<br>Adicione sua primeira música acima.</p>
-            </div>
-
-            <footer>
-                <div class="footer-text">Feito por <span>Caio Bertaglia</span> &mdash; Lyra &copy; 2025</div>
-                <div class="footer-version">LYRA v1.0</div>
-            </footer>
-
-        </main>
+        </div>
+        <div class="badge">v1.0 · ao vivo</div>
     </div>
 
-    <div class="side-line"></div>
+    <!-- stats cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number" id="statTotal">0</div>
+            <div class="stat-label">TOTAL</div>
+            <div class="progress-bar"><div class="progress-fill" id="barTotal"></div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="statPlayed">0</div>
+            <div class="stat-label">TOCADAS</div>
+            <div class="progress-bar"><div class="progress-fill" id="barPlayed"></div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="statRemaining">0</div>
+            <div class="stat-label">RESTANTES</div>
+            <div class="progress-bar"><div class="progress-fill" id="barRemaining"></div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="statPercent">0%</div>
+            <div class="stat-label">PROGRESSO</div>
+            <div class="progress-bar"><div class="progress-fill" id="barPercent"></div></div>
+        </div>
+    </div>
 
-    <script src="assets/js/main.js"></script>
+    <!-- add song section -->
+    <div class="add-panel">
+        <div class="form-row">
+            <div class="input-group">
+                <span>♩</span>
+                <input type="text" id="music-input" placeholder="Digite o nome da música ..." maxlength="80" autocomplete="off">
+            </div>
+            <button class="btn-add" id="addButton">+ ADICIONAR</button>
+        </div>
+    </div>
+
+    <!-- list header -->
+    <div class="list-header">
+        <h2>📋 Minha setlist</h2>
+        <div class="counter" id="sectionCount">0 músicas</div>
+    </div>
+
+    <!-- dynamic list container -->
+    <ul class="music-list" id="musicList"></ul>
+
+    <!-- empty state -->
+    <div id="emptyState" class="empty-state">
+        <span>🎸</span>
+        <p>Nenhuma música na lista ainda.<br>Adicione sua primeira música acima.</p>
+    </div>
+
+    <!-- footer -->
+    <div class="footer">
+        <div>Feito por <span>Caio Bertaglia</span> — Lyra © 2025</div>
+        <div>LYRA v1.0</div>
+    </div>
+</div>
+
+<script src="main.js"></script>
 </body>
-
 </html>
