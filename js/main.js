@@ -1,111 +1,269 @@
-// ── SELETORES ──
-const input = document.getElementById('music-input');
-const addBtn = document.getElementById('add-btn');
-const list = document.getElementById('music-list');
-const empty = document.getElementById('empty-state');
+// ================================
+//  SIMPLIFIED & FULL FUNCTIONALITY
+//  - add / remove / toggle played
+//  - stats + progress bars
+//  - localStorage persistence
+//  - Drag & Drop reorder (HTML5 native)
+//  - XSS safe rendering
+// ================================
 
-// ── ESTADO ──
-let songs = JSON.parse(localStorage.getItem('lyra') || '[]');
+(function() {
+    // ----- DOM elements -----
+    const musicInput = document.getElementById('music-input');
+    const addBtn = document.getElementById('addButton');
+    const musicListContainer = document.getElementById('musicList');
+    const emptyStateDiv = document.getElementById('emptyState');
 
-// ── PERSISTÊNCIA ──
-function save() {
-    localStorage.setItem('lyra', JSON.stringify(songs));
-}
+    // ----- State -----
+    let songs = [];         // each object: { name, played }
 
-// ── STATS ──
-function updateStats() {
-    const total = songs.length;
-    const played = songs.filter(s => s.played).length;
-    const remaining = total - played;
-    const pct = total ? Math.round((played / total) * 100) : 0;
+    // ----- load from localStorage -----
+    function loadFromStorage() {
+        const stored = localStorage.getItem('lyra_setlist');
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed)) {
+                    songs = parsed;
+                } else {
+                    songs = [];
+                }
+            } catch(e) { songs = []; }
+        } else {
+            songs = [];
+        }
+    }
 
-    document.getElementById('stat-total').textContent = total;
-    document.getElementById('stat-played').textContent = played;
-    document.getElementById('stat-remaining').textContent = remaining;
-    document.getElementById('stat-pct').textContent = pct + '%';
+    // ----- save to localStorage -----
+    function saveToStorage() {
+        localStorage.setItem('lyra_setlist', JSON.stringify(songs));
+    }
 
-    document.getElementById('bar-total').style.width = total ? '100%' : '0%';
-    document.getElementById('bar-played').style.width = pct + '%';
-    document.getElementById('bar-remaining').style.width = total ? ((remaining / total) * 100) + '%' : '0%';
-    document.getElementById('bar-pct').style.width = pct + '%';
+    // ----- update statistics (total, played, remaining, percentage) -----
+    function updateStatsAndUI() {
+        const total = songs.length;
+        const playedCount = songs.filter(s => s.played === true).length;
+        const remainingCount = total - playedCount;
+        const percent = total === 0 ? 0 : Math.round((playedCount / total) * 100);
 
-    document.getElementById('section-count').textContent =
-        total + (total === 1 ? ' música' : ' músicas');
+        // update numbers
+        document.getElementById('statTotal').innerText = total;
+        document.getElementById('statPlayed').innerText = playedCount;
+        document.getElementById('statRemaining').innerText = remainingCount;
+        document.getElementById('statPercent').innerText = percent + '%';
 
-    empty.classList.toggle('visible', total === 0);
-}
+        // progress bars width (smooth)
+        const totalPercentWidth = total > 0 ? 100 : 0;
+        const playedPercentWidth = percent;
+        const remainingPercentWidth = total === 0 ? 0 : (remainingCount / total) * 100;
+        
+        const barTotal = document.getElementById('barTotal');
+        const barPlayed = document.getElementById('barPlayed');
+        const barRemaining = document.getElementById('barRemaining');
+        const barPercent = document.getElementById('barPercent');
+        
+        if (barTotal) barTotal.style.width = totalPercentWidth + '%';
+        if (barPlayed) barPlayed.style.width = playedPercentWidth + '%';
+        if (barRemaining) barRemaining.style.width = remainingPercentWidth + '%';
+        if (barPercent) barPercent.style.width = percent + '%';
 
-// ── SEGURANÇA (evita XSS) ──
-function esc(str) {
-    const d = document.createElement('div');
-    d.appendChild(document.createTextNode(str));
-    return d.innerHTML;
-}
+        // update section counter text
+        const counterSpan = document.getElementById('sectionCount');
+        if (counterSpan) {
+            counterSpan.innerText = total + (total === 1 ? ' música' : ' músicas');
+        }
 
-// ── RENDERIZAR LISTA ──
-function render() {
-    list.innerHTML = '';
+        // toggle empty state visibility
+        if (emptyStateDiv) {
+            if (total === 0) {
+                emptyStateDiv.classList.remove('hidden');
+            } else {
+                emptyStateDiv.classList.add('hidden');
+            }
+        }
+    }
 
-    songs.forEach((song, i) => {
-        const li = document.createElement('li');
-        li.className = 'music-item' + (song.played ? ' played' : '');
+    // ----- escape HTML (XSS prevention) -----
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
 
-        li.innerHTML = `
-      <span class="drag-handle">⠿</span>
-      <button class="check-btn" onclick="toggle(${i})">
-        <svg class="check-mark" viewBox="0 0 10 10" fill="none">
-          <path d="M1.5 5L4 7.5L8.5 2.5" stroke="#FAEEDA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <span class="music-index">${String(i + 1).padStart(2, '0')}</span>
-      <div class="music-info">
-        <div class="music-name">${esc(song.name)}</div>
-        <div class="music-meta">adicionada hoje</div>
-      </div>
-      ${song.played
-                ? '<span class="pill pill-played">TOCADA</span>'
-                : '<span class="pill pill-queue">NA FILA</span>'}
-      <button class="delete-btn" onclick="remove(${i})" title="Remover">✕</button>
-    `;
-
-        list.appendChild(li);
+    // ----- render full list with drag & drop attributes -----
+    function renderList() {
+        if (!musicListContainer) return;
+        musicListContainer.innerHTML = '';
+        
+        songs.forEach((song, idx) => {
+            const li = document.createElement('li');
+            li.className = 'music-item' + (song.played ? ' played' : '');
+            li.setAttribute('data-index', idx);
+            li.setAttribute('draggable', 'true');
+            
+            // drag start handler
+            li.addEventListener('dragstart', handleDragStart);
+            li.addEventListener('dragover', handleDragOver);
+            li.addEventListener('drop', handleDrop);
+            
+            // inner structure
+            const dragSpan = document.createElement('span');
+            dragSpan.className = 'drag-handle';
+            dragSpan.innerText = '⠿';
+            dragSpan.style.cursor = 'grab';
+            
+            // checkbox / circle
+            const checkDiv = document.createElement('div');
+            checkDiv.className = 'check-circle';
+            checkDiv.innerHTML = `<span class="check-mark">${song.played ? '✓' : ''}</span>`;
+            checkDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                togglePlayed(idx);
+            });
+            
+            // index number
+            const indexSpan = document.createElement('span');
+            indexSpan.className = 'index';
+            indexSpan.innerText = String(idx + 1).padStart(2, '0');
+            
+            // song info block
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'song-info';
+            const songNameDiv = document.createElement('div');
+            songNameDiv.className = 'song-name';
+            songNameDiv.innerText = escapeHtml(song.name);
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'song-meta';
+            metaDiv.innerText = 'adicionada • setlist';
+            infoDiv.appendChild(songNameDiv);
+            infoDiv.appendChild(metaDiv);
+            
+            // pill status
+            const pillSpan = document.createElement('span');
+            pillSpan.className = 'pill-status' + (song.played ? ' played-pill' : '');
+            pillSpan.innerText = song.played ? 'TOCADA' : 'NA FILA';
+            
+            // delete button
+            const delBtn = document.createElement('button');
+            delBtn.className = 'delete-btn';
+            delBtn.innerHTML = '✕';
+            delBtn.setAttribute('aria-label', 'Remover música');
+            delBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                removeSong(idx);
+            });
+            
+            li.appendChild(dragSpan);
+            li.appendChild(checkDiv);
+            li.appendChild(indexSpan);
+            li.appendChild(infoDiv);
+            li.appendChild(pillSpan);
+            li.appendChild(delBtn);
+            
+            musicListContainer.appendChild(li);
+        });
+        
+        updateStatsAndUI();
+    }
+    
+    // ----- DRAG & DROP handlers (reordering) -----
+    let dragSourceIndex = null;
+    
+    function handleDragStart(e) {
+        const li = e.target.closest('.music-item');
+        if (!li) return;
+        const idx = li.getAttribute('data-index');
+        if (idx !== null) {
+            dragSourceIndex = parseInt(idx, 10);
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', idx);
+        }
+        // style
+        e.target.style.opacity = '0.5';
+    }
+    
+    function handleDragOver(e) {
+        e.preventDefault();  // necessary for drop
+        e.dataTransfer.dropEffect = 'move';
+    }
+    
+    function handleDrop(e) {
+        e.preventDefault();
+        const targetLi = e.target.closest('.music-item');
+        if (!targetLi) return;
+        const targetIndexAttr = targetLi.getAttribute('data-index');
+        if (targetIndexAttr === null) return;
+        const targetIndex = parseInt(targetIndexAttr, 10);
+        if (dragSourceIndex !== null && dragSourceIndex !== targetIndex) {
+            // reorder songs array
+            const [movedItem] = songs.splice(dragSourceIndex, 1);
+            songs.splice(targetIndex, 0, movedItem);
+            saveToStorage();
+            renderList();   // re-render with new order
+        }
+        // reset opacity for dragged element
+        if (e.target && e.target.style) e.target.style.opacity = '';
+        dragSourceIndex = null;
+    }
+    
+    // ----- actions -----
+    function addSong() {
+        const rawName = musicInput.value.trim();
+        if (rawName === '') return;
+        const newSong = {
+            name: rawName,
+            played: false
+        };
+        songs.push(newSong);
+        saveToStorage();
+        renderList();
+        musicInput.value = '';
+        musicInput.focus();
+    }
+    
+    function removeSong(index) {
+        if (index >= 0 && index < songs.length) {
+            songs.splice(index, 1);
+            saveToStorage();
+            renderList();
+        }
+    }
+    
+    function togglePlayed(index) {
+        if (index >= 0 && index < songs.length) {
+            songs[index].played = !songs[index].played;
+            saveToStorage();
+            renderList();
+        }
+    }
+    
+    // public helper for focus (can be called from anywhere)
+    window.focusInput = function() {
+        musicInput.focus();
+    };
+    
+    // attach event listeners
+    addBtn.addEventListener('click', addSong);
+    musicInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addSong();
+        }
     });
-
-    updateStats();
-}
-
-// ── AÇÕES ──
-function addSong() {
-    const name = input.value.trim();
-    if (!name) return;
-    songs.push({ name, played: false });
-    save();
-    render();
-    input.value = '';
-    input.focus();
-}
-
-function remove(i) {
-    songs.splice(i, 1);
-    save();
-    render();
-}
-
-function toggle(i) {
-    songs[i].played = !songs[i].played;
-    save();
-    render();
-}
-
-function focusInput() {
-    input.focus();
-}
-
-// ── EVENTOS ──
-addBtn.addEventListener('click', addSong);
-input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') addSong();
-});
-
-// ── INICIAR ──
-render();
+    
+    // initial load & render
+    loadFromStorage();
+    renderList();
+    
+    // reset drag source after drag ends globally
+    document.addEventListener('dragend', function(e) {
+        if (e.target && e.target.style) e.target.style.opacity = '';
+        dragSourceIndex = null;
+    });
+})();
