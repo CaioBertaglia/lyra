@@ -1,0 +1,223 @@
+/**
+ * @fileoverview StorageService — typed localStorage wrapper with versioning
+ * Commit 2: data model + storage service
+ *
+ * All persistence goes through this module.
+ * Keys are namespaced under "lyra_v2_*" to avoid collisions
+ * and allow future schema migrations.
+ */
+ 
+'use strict';
+ 
+import { createSetlist } from '../models.js';
+ 
+// ─── Constants ────────────────────────────────────────────────────────────────
+ 
+const KEYS = Object.freeze({
+  SETLISTS:       'lyra_v2_setlists',
+  ACTIVE_SETLIST: 'lyra_v2_active',
+  SHOWS:          'lyra_v2_shows',
+  SHOW_STATE:     'lyra_v2_show_state',
+  SETTINGS:       'lyra_v2_settings',
+  SCHEMA_VERSION: 'lyra_v2_schema',
+});
+ 
+const SCHEMA_VERSION = 2;
+ 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+ 
+function read(key, fallback = null) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw !== null ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+ 
+function write(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (e) {
+    console.error('[StorageService] write failed:', key, e);
+    return false;
+  }
+}
+ 
+function remove(key) {
+  try { localStorage.removeItem(key); } catch { /* noop */ }
+}
+ 
+// ─── Migration ─────────────────────────────────────────────────────────────
+ 
+/**
+ * Migrates legacy v1 data (lyra_setlist) to v2 schema.
+ * Runs once on first load of v2.
+ */
+function migrate() {
+  const version = read(KEYS.SCHEMA_VERSION, 1);
+  if (version >= SCHEMA_VERSION) return;
+ 
+  const legacy = read('lyra_setlist');
+  if (Array.isArray(legacy) && legacy.length > 0) {
+    const migrated = createSetlist({
+      name:   'Setlist Importada',
+      songs:  legacy.map(s => ({
+        id:        crypto.randomUUID(),
+        name:      s.name ?? '',
+        artist:    '',
+        bpm:       0,
+        key:       '',
+        duration:  0,
+        played:    s.played ?? false,
+        playedAt:  0,
+        spotifyId: '',
+        albumArt:  '',
+        notes:     '',
+        addedAt:   Date.now(),
+      })),
+    });
+    write(KEYS.SETLISTS, [migrated]);
+    write(KEYS.ACTIVE_SETLIST, migrated.id);
+    remove('lyra_setlist');
+    console.info('[StorageService] Migrated v1 → v2');
+  }
+ 
+  write(KEYS.SCHEMA_VERSION, SCHEMA_VERSION);
+}
+ 
+// ─── Setlists ─────────────────────────────────────────────────────────────────
+ 
+/** @returns {import('../models.js').Setlist[]} */
+function getSetlists() {
+  return read(KEYS.SETLISTS, []);
+}
+ 
+/** @param {import('../models.js').Setlist[]} setlists */
+function saveSetlists(setlists) {
+  // stamp updatedAt on each
+  const stamped = setlists.map(sl => ({ ...sl, updatedAt: Date.now() }));
+  write(KEYS.SETLISTS, stamped);
+}
+ 
+/** @param {import('../models.js').Setlist} setlist */
+function upsertSetlist(setlist) {
+  const all = getSetlists();
+  const idx = all.findIndex(s => s.id === setlist.id);
+  if (idx >= 0) {
+    all[idx] = { ...setlist, updatedAt: Date.now() };
+  } else {
+    all.push({ ...setlist, updatedAt: Date.now() });
+  }
+  write(KEYS.SETLISTS, all);
+}
+ 
+/** @param {string} id */
+function deleteSetlist(id) {
+  const filtered = getSetlists().filter(s => s.id !== id);
+  write(KEYS.SETLISTS, filtered);
+}
+ 
+/** @returns {string|null} */
+function getActiveSetlistId() {
+  return read(KEYS.ACTIVE_SETLIST, null);
+}
+ 
+/** @param {string} id */
+function setActiveSetlistId(id) {
+  write(KEYS.ACTIVE_SETLIST, id);
+}
+ 
+/** @returns {import('../models.js').Setlist|null} */
+function getActiveSetlist() {
+  const id  = getActiveSetlistId();
+  const all = getSetlists();
+  return all.find(s => s.id === id) ?? all[0] ?? null;
+}
+ 
+// ─── Shows (archive) ─────────────────────────────────────────────────────────
+ 
+/** @returns {import('../models.js').Show[]} */
+function getShows() {
+  return read(KEYS.SHOWS, []);
+}
+ 
+/** @param {import('../models.js').Show} show */
+function saveShow(show) {
+  const all = getShows();
+  all.unshift(show); // most-recent first
+  write(KEYS.SHOWS, all);
+}
+ 
+/** @param {string} id */
+function deleteShow(id) {
+  write(KEYS.SHOWS, getShows().filter(s => s.id !== id));
+}
+ 
+// ─── Live show state ──────────────────────────────────────────────────────────
+ 
+/**
+ * @typedef {Object} ShowState
+ * @property {boolean} running
+ * @property {number}  startedAt
+ * @property {number}  currentSongIndex
+ * @property {number}  currentSongStartedAt
+ */
+ 
+/** @returns {ShowState|null} */
+function getShowState() {
+  return read(KEYS.SHOW_STATE, null);
+}
+ 
+/** @param {ShowState|null} state */
+function saveShowState(state) {
+  if (state === null) {
+    remove(KEYS.SHOW_STATE);
+  } else {
+    write(KEYS.SHOW_STATE, state);
+  }
+}
+ 
+// ─── Settings ─────────────────────────────────────────────────────────────────
+ 
+const DEFAULT_SETTINGS = {
+  spotifyClientId: '',
+  autoAdvance:     true,
+  countdownBeats:  4,
+  theme:           'dark',
+};
+ 
+/** @returns {typeof DEFAULT_SETTINGS} */
+function getSettings() {
+  return { ...DEFAULT_SETTINGS, ...read(KEYS.SETTINGS, {}) };
+}
+ 
+/** @param {Partial<typeof DEFAULT_SETTINGS>} patch */
+function saveSettings(patch) {
+  write(KEYS.SETTINGS, { ...getSettings(), ...patch });
+}
+ 
+// ─── Export ───────────────────────────────────────────────────────────────────
+ 
+export const StorageService = Object.freeze({
+  migrate,
+  // setlists
+  getSetlists,
+  saveSetlists,
+  upsertSetlist,
+  deleteSetlist,
+  getActiveSetlistId,
+  setActiveSetlistId,
+  getActiveSetlist,
+  // shows
+  getShows,
+  saveShow,
+  deleteShow,
+  // live state
+  getShowState,
+  saveShowState,
+  // settings
+  getSettings,
+  saveSettings,
+});
