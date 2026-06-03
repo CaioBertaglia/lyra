@@ -543,3 +543,41 @@ body::before {
   from { opacity: 0; transform: translateX(24px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+
+.spotify-results {
+  margin-top: 12px;
+}
+
+.spotify-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.spotify-item img {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.8);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  width: 400px;
+  padding: 24px;
+  border-radius: 16px;
+  background: #111;
+}

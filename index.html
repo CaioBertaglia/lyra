@@ -1,94 +1,144 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Lyra · Setlist Manager</title>
     <link rel="stylesheet" href="./css/style.css">
 </head>
+
 <body>
-<div class="app">
-    <!-- header -->
-    <div class="header">
-        <div class="logo-area">
-            <svg class="logo-icon" viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="30" cy="12" r="4" fill="#FAC775"/>
-                <path d="M30 4 L30 0 M30 20 L30 24 M21 12 L18 12 M39 12 L42 12" stroke="#FAC775" stroke-width="1.2" opacity="0.7"/>
-                <rect x="10" y="0" width="40" height="6" rx="3" fill="#412402" stroke="#BA7517" stroke-width="0.8"/>
-                <circle cx="16" cy="3" r="2.5" fill="#EF9F27"/>
-                <circle cx="30" cy="2" r="2.5" fill="#EF9F27"/>
-                <circle cx="44" cy="3" r="2.5" fill="#EF9F27"/>
-                <path d="M18 20 C10 26 8 42 12 58 C16 72 24 82 30 84 C36 82 44 72 48 58 C52 42 50 26 42 20 Z" fill="#1A1408" stroke="#854F0B" stroke-width="1"/>
-                <ellipse cx="30" cy="54" rx="9" ry="12" fill="#0E0C07" stroke="#854F0B" stroke-width="0.7"/>
-                <line x1="16" y1="6" x2="18" y2="72" stroke="#FAC775" stroke-width="0.7" opacity="0.6"/>
-                <line x1="30" y1="4" x2="30" y2="74" stroke="#FAC775" stroke-width="0.9" opacity="0.7"/>
-                <line x1="44" y1="6" x2="42" y2="72" stroke="#FAC775" stroke-width="0.7" opacity="0.6"/>
-            </svg>
-            <div class="logo-text">
-                <h1>LYRA</h1>
-                <p>SETLIST MANAGER</p>
+    <div class="app">
+        <!-- header -->
+        <div class="header">
+            <div class="logo-area">
+                <svg class="logo-icon" viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="30" cy="12" r="4" fill="#FAC775" />
+                    <path d="M30 4 L30 0 M30 20 L30 24 M21 12 L18 12 M39 12 L42 12" stroke="#FAC775" stroke-width="1.2"
+                        opacity="0.7" />
+                    <rect x="10" y="0" width="40" height="6" rx="3" fill="#412402" stroke="#BA7517"
+                        stroke-width="0.8" />
+                    <circle cx="16" cy="3" r="2.5" fill="#EF9F27" />
+                    <circle cx="30" cy="2" r="2.5" fill="#EF9F27" />
+                    <circle cx="44" cy="3" r="2.5" fill="#EF9F27" />
+                    <path d="M18 20 C10 26 8 42 12 58 C16 72 24 82 30 84 C36 82 44 72 48 58 C52 42 50 26 42 20 Z"
+                        fill="#1A1408" stroke="#854F0B" stroke-width="1" />
+                    <ellipse cx="30" cy="54" rx="9" ry="12" fill="#0E0C07" stroke="#854F0B" stroke-width="0.7" />
+                    <line x1="16" y1="6" x2="18" y2="72" stroke="#FAC775" stroke-width="0.7" opacity="0.6" />
+                    <line x1="30" y1="4" x2="30" y2="74" stroke="#FAC775" stroke-width="0.9" opacity="0.7" />
+                    <line x1="44" y1="6" x2="42" y2="72" stroke="#FAC775" stroke-width="0.7" opacity="0.6" />
+                </svg>
+                <div class="logo-text">
+                    <h1>LYRA</h1>
+                    <p>SETLIST MANAGER</p>
+                </div>
+            </div>
+            <div class="badge">v1.0 · ao vivo</div>
+        </div>
+
+        <!-- stats cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="statTotal">0</div>
+                <div class="stat-label">TOTAL</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="barTotal"></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="statPlayed">0</div>
+                <div class="stat-label">TOCADAS</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="barPlayed"></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="statRemaining">0</div>
+                <div class="stat-label">RESTANTES</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="barRemaining"></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="statPercent">0%</div>
+                <div class="stat-label">PROGRESSO</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="barPercent"></div>
+                </div>
             </div>
         </div>
-        <div class="badge">v1.0 · ao vivo</div>
-    </div>
 
-    <!-- stats cards -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-number" id="statTotal">0</div>
-            <div class="stat-label">TOTAL</div>
-            <div class="progress-bar"><div class="progress-fill" id="barTotal"></div></div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number" id="statPlayed">0</div>
-            <div class="stat-label">TOCADAS</div>
-            <div class="progress-bar"><div class="progress-fill" id="barPlayed"></div></div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number" id="statRemaining">0</div>
-            <div class="stat-label">RESTANTES</div>
-            <div class="progress-bar"><div class="progress-fill" id="barRemaining"></div></div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number" id="statPercent">0%</div>
-            <div class="stat-label">PROGRESSO</div>
-            <div class="progress-bar"><div class="progress-fill" id="barPercent"></div></div>
-        </div>
-    </div>
+        <!-- add song section -->
+        <div id="spotifyResults" class="spotify-results" hidden></div>
+        <div class="add-panel">
+            <div class="form-row">
+                <div class="input-group">
+                    <span>♩</span>
+                    <input type="text" id="music-input" placeholder="Digite o nome da música ..." maxlength="80"
+                        autocomplete="off">
+                </div>
 
-    <!-- add song section -->
-    <div class="add-panel">
-        <div class="form-row">
-            <div class="input-group">
-                <span>♩</span>
-                <input type="text" id="music-input" placeholder="Digite o nome da música ..." maxlength="80" autocomplete="off">
+                <button class="btn-add" id="addButton">
+                    + ADICIONAR
+                </button>
             </div>
-            <button class="btn-add" id="addButton">+ ADICIONAR</button>
+
+            <div id="spotifyResults" class="spotify-results"></div>
+            <div id="songModal" class="modal hidden">
+
+                <div class="modal-content">
+
+                    <img id="modalAlbumArt">
+
+                    <h3 id="modalTitle"></h3>
+
+                    <p id="modalArtist"></p>
+
+                    <div class="song-meta">
+                        <span id="modalBpm"></span>
+                        <span id="modalKey"></span>
+                        <span id="modalDuration"></span>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button id="cancelSongBtn">
+                            Cancelar
+                        </button>
+
+                        <button id="confirmSongBtn">
+                            Adicionar à Setlist
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- list header -->
+        <div class="list-header">
+            <h2>📋 Minha setlist</h2>
+            <div class="counter" id="sectionCount">0 músicas</div>
+        </div>
+
+        <!-- dynamic list container -->
+        <ul class="music-list" id="musicList"></ul>
+
+        <!-- empty state -->
+        <div id="emptyState" class="empty-state">
+            <span>🎸</span>
+            <p>Nenhuma música na lista ainda.<br>Adicione sua primeira música acima.</p>
+        </div>
+
+        <!-- footer -->
+        <div class="footer">
+            <div>Feito por <span>Caio Bertaglia</span> — Lyra © 2025</div>
+            <div>LYRA v1.0</div>
         </div>
     </div>
 
-    <!-- list header -->
-    <div class="list-header">
-        <h2>📋 Minha setlist</h2>
-        <div class="counter" id="sectionCount">0 músicas</div>
-    </div>
-
-    <!-- dynamic list container -->
-    <ul class="music-list" id="musicList"></ul>
-
-    <!-- empty state -->
-    <div id="emptyState" class="empty-state">
-        <span>🎸</span>
-        <p>Nenhuma música na lista ainda.<br>Adicione sua primeira música acima.</p>
-    </div>
-
-    <!-- footer -->
-    <div class="footer">
-        <div>Feito por <span>Caio Bertaglia</span> — Lyra © 2025</div>
-        <div>LYRA v1.0</div>
-    </div>
-</div>
-
-<script type="module" src="./js/main.js"></script>
+    <script type="module" src="./js/main.js"></script>
 </body>
+
 </html>
