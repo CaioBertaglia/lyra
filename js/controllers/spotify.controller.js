@@ -77,6 +77,17 @@ if (addButton) {
   });
 }
 
+const setlist = StorageService.getActiveSetlist();
+
+setlist.songs.push(song);
+
+StorageService.upsertSetlist(setlist);
+
+EventBus.emit('song:added', {
+  song,
+  setlist
+});
+
 export const SpotifyController = Object.freeze({
   init
 });
