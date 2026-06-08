@@ -1,144 +1,321 @@
+cat > /home/claude/lyra-v2/index.html << 'ENDHTML'
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Lyra · Setlist Manager</title>
-    <link rel="stylesheet" href="./css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#0A0805">
+  <meta name="description" content="Lyra — Gerenciador de setlists para músicos">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lyra · Setlist Manager</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./css/style.css">
 </head>
-
 <body>
-    <div class="app">
-        <!-- header -->
-        <div class="header">
-            <div class="logo-area">
-                <svg class="logo-icon" viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="30" cy="12" r="4" fill="#FAC775" />
-                    <path d="M30 4 L30 0 M30 20 L30 24 M21 12 L18 12 M39 12 L42 12" stroke="#FAC775" stroke-width="1.2"
-                        opacity="0.7" />
-                    <rect x="10" y="0" width="40" height="6" rx="3" fill="#412402" stroke="#BA7517"
-                        stroke-width="0.8" />
-                    <circle cx="16" cy="3" r="2.5" fill="#EF9F27" />
-                    <circle cx="30" cy="2" r="2.5" fill="#EF9F27" />
-                    <circle cx="44" cy="3" r="2.5" fill="#EF9F27" />
-                    <path d="M18 20 C10 26 8 42 12 58 C16 72 24 82 30 84 C36 82 44 72 48 58 C52 42 50 26 42 20 Z"
-                        fill="#1A1408" stroke="#854F0B" stroke-width="1" />
-                    <ellipse cx="30" cy="54" rx="9" ry="12" fill="#0E0C07" stroke="#854F0B" stroke-width="0.7" />
-                    <line x1="16" y1="6" x2="18" y2="72" stroke="#FAC775" stroke-width="0.7" opacity="0.6" />
-                    <line x1="30" y1="4" x2="30" y2="74" stroke="#FAC775" stroke-width="0.9" opacity="0.7" />
-                    <line x1="44" y1="6" x2="42" y2="72" stroke="#FAC775" stroke-width="0.7" opacity="0.6" />
-                </svg>
-                <div class="logo-text">
-                    <h1>LYRA</h1>
-                    <p>SETLIST MANAGER</p>
-                </div>
-            </div>
-            <div class="badge">v1.0 · ao vivo</div>
-        </div>
 
-        <!-- stats cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number" id="statTotal">0</div>
-                <div class="stat-label">TOTAL</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="barTotal"></div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="statPlayed">0</div>
-                <div class="stat-label">TOCADAS</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="barPlayed"></div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="statRemaining">0</div>
-                <div class="stat-label">RESTANTES</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="barRemaining"></div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="statPercent">0%</div>
-                <div class="stat-label">PROGRESSO</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="barPercent"></div>
-                </div>
-            </div>
-        </div>
+<!-- ═══════════════ SHOW STAGE (tela cheia ao vivo) ═══════════════ -->
+<div id="showStage" class="show-stage" hidden aria-hidden="true" role="dialog" aria-label="Show ao vivo">
+  <p class="show-stage__elapsed mono" id="showElapsed">00:00</p>
+  <p class="show-stage__song-num mono" id="showSongNum">1 / 0</p>
+  <p class="show-stage__song-name" id="showCurrentSong">—</p>
+  <p class="show-stage__song-elapsed mono" id="showSongElapsed">00:00</p>
 
-        <!-- add song section -->
-        <div id="spotifyResults" class="spotify-results" hidden></div>
-        <div class="add-panel">
-            <div class="form-row">
-                <div class="input-group">
-                    <span>♩</span>
-                    <input type="text" id="music-input" placeholder="Digite o nome da música ..." maxlength="80"
-                        autocomplete="off">
-                </div>
+  <div class="show-stage__progress-track">
+    <div class="show-stage__progress-bar" id="showSongProgress"></div>
+  </div>
 
-                <button class="btn-add" id="addButton">
-                    + ADICIONAR
-                </button>
-            </div>
+  <div class="show-stage__controls">
+    <button class="btn btn--secondary btn--sm" id="btnStagePrev" aria-label="Música anterior">◀</button>
+    <button class="btn btn--primary"           id="btnStagePause" aria-label="Pausar">⏸</button>
+    <button class="btn btn--secondary btn--sm" id="btnStageNext" aria-label="Próxima música">▶</button>
+    <button class="btn btn--danger btn--sm"    id="btnStageEnd">Encerrar show</button>
+  </div>
 
-            <div id="spotifyResults" class="spotify-results"></div>
-            <div id="songModal" class="modal hidden">
+  <ul class="stage-song-list" id="stageSongList" aria-label="Lista de músicas"></ul>
+</div>
 
-                <div class="modal-content">
+<!-- ═══════════════ APP ═══════════════ -->
+<div class="app">
 
-                    <img id="modalAlbumArt">
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-area">
+      <svg class="logo-icon" viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="30" cy="12" r="4" fill="#FAC775"/>
+        <path d="M30 4L30 0M30 20L30 24M21 12L18 12M39 12L42 12" stroke="#FAC775" stroke-width="1.2" opacity="0.7"/>
+        <rect x="10" y="0" width="40" height="6" rx="3" fill="#412402" stroke="#BA7517" stroke-width="0.8"/>
+        <circle cx="16" cy="3" r="2.5" fill="#EF9F27"/>
+        <circle cx="30" cy="2" r="2.5" fill="#EF9F27"/>
+        <circle cx="44" cy="3" r="2.5" fill="#EF9F27"/>
+        <path d="M18 20 C10 26 8 42 12 58 C16 72 24 82 30 84 C36 82 44 72 48 58 C52 42 50 26 42 20 Z" fill="#1A1408" stroke="#854F0B" stroke-width="1"/>
+        <ellipse cx="30" cy="54" rx="9" ry="12" fill="#0E0C07" stroke="#854F0B" stroke-width="0.7"/>
+        <line x1="16" y1="6" x2="18" y2="72" stroke="#FAC775" stroke-width="0.7" opacity="0.6"/>
+        <line x1="30" y1="4" x2="30" y2="74" stroke="#FAC775" stroke-width="0.9" opacity="0.7"/>
+        <line x1="44" y1="6" x2="42" y2="72" stroke="#FAC775" stroke-width="0.7" opacity="0.6"/>
+      </svg>
+      <div class="logo-text">
+        <h1>LYRA</h1>
+        <p>SETLIST MANAGER</p>
+      </div>
+    </div>
+    <div class="header__actions">
+      <button class="btn btn--ghost btn--sm" id="btnSettings" aria-label="Configurações">⚙ Config</button>
+      <button class="btn btn--secondary btn--sm" id="btnShare" aria-label="Compartilhar">↗ Compartilhar</button>
+      <button class="btn btn--primary" id="btnStartShow">▶ Iniciar Show</button>
+    </div>
+  </header>
 
-                    <h3 id="modalTitle"></h3>
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number" id="statTotal">0</div>
+      <div class="stat-label">TOTAL</div>
+      <div class="progress-bar"><div class="progress-fill" id="barTotal"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="statPlayed">0</div>
+      <div class="stat-label">TOCADAS</div>
+      <div class="progress-bar"><div class="progress-fill" id="barPlayed"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="statRemaining">0</div>
+      <div class="stat-label">RESTANTES</div>
+      <div class="progress-bar"><div class="progress-fill" id="barRemaining"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="statPercent">0%</div>
+      <div class="stat-label">PROGRESSO</div>
+      <div class="progress-bar"><div class="progress-fill" id="barPercent"></div></div>
+    </div>
+    <div class="stat-card stat-card--wide">
+      <div class="stat-number mono" id="statDuration">--:--</div>
+      <div class="stat-label">DURAÇÃO TOTAL</div>
+      <div class="progress-bar"><div class="progress-fill" id="barDuration" style="width:100%"></div></div>
+    </div>
+  </div>
 
-                    <p id="modalArtist"></p>
+  <!-- Abas de setlist -->
+  <div class="setlist-tabs-wrap">
+    <div class="setlist-tabs" id="setlistTabs" role="tablist" aria-label="Setlists"></div>
+    <button class="btn btn--ghost btn--sm" id="btnNewSetlist" title="Nova setlist">+ Nova</button>
+    <button class="btn btn--ghost btn--sm" id="btnDeleteSetlist" title="Remover setlist atual">✕</button>
+  </div>
 
-                    <div class="song-meta">
-                        <span id="modalBpm"></span>
-                        <span id="modalKey"></span>
-                        <span id="modalDuration"></span>
-                    </div>
+  <!-- Meta da setlist (editável) -->
+  <div class="setlist-meta">
+    <span class="setlist-meta__name" id="setlistName" role="button" tabindex="0" title="Clique para editar">—</span>
+    <span class="setlist-meta__venue" id="setlistVenue" role="button" tabindex="0" title="Clique para editar">—</span>
+    <span class="setlist-meta__date" id="setlistDate" role="button" tabindex="0" title="Clique para editar">—</span>
+  </div>
 
-                    <div class="modal-actions">
-                        <button id="cancelSongBtn">
-                            Cancelar
-                        </button>
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button class="btn btn--primary btn--sm" id="btnAddSong">+ Adicionar música</button>
+  </div>
 
-                        <button id="confirmSongBtn">
-                            Adicionar à Setlist
-                        </button>
-                    </div>
+  <!-- Lista de músicas -->
+  <div class="list-header">
+    <h2>📋 Setlist</h2>
+    <div class="counter" id="sectionCount">0 músicas</div>
+  </div>
 
-                </div>
+  <ul class="music-list" id="musicList" aria-label="Lista de músicas"></ul>
 
-            </div>
-        </div>
+  <div id="emptyState" class="empty-state" hidden>
+    <span>🎸</span>
+    <p>Nenhuma música ainda.<br>Clique em "Adicionar música" para começar.</p>
+  </div>
 
-        <!-- list header -->
-        <div class="list-header">
-            <h2>📋 Minha setlist</h2>
-            <div class="counter" id="sectionCount">0 músicas</div>
-        </div>
+  <!-- Histórico de shows -->
+  <section class="history-section">
+    <p class="history-title">Histórico de shows</p>
+    <ul class="history-list" id="historyList"></ul>
+  </section>
 
-        <!-- dynamic list container -->
-        <ul class="music-list" id="musicList"></ul>
+  <!-- Footer -->
+  <div class="footer">
+    <div>Feito por <span>Caio Bertaglia</span> — Lyra © 2025</div>
+    <div>LYRA v2.0</div>
+  </div>
+</div>
 
-        <!-- empty state -->
-        <div id="emptyState" class="empty-state">
-            <span>🎸</span>
-            <p>Nenhuma música na lista ainda.<br>Adicione sua primeira música acima.</p>
-        </div>
+<!-- Toast container -->
+<div id="toast-container" aria-live="polite"></div>
 
-        <!-- footer -->
-        <div class="footer">
-            <div>Feito por <span>Caio Bertaglia</span> — Lyra © 2025</div>
-            <div>LYRA v1.0</div>
-        </div>
+<!-- ═══════════════ MODAIS ═══════════════ -->
+
+<!-- Modal: Adicionar música -->
+<div id="modalAddSong" class="modal-backdrop" hidden aria-hidden="true" role="dialog" aria-labelledby="modalAddTitle">
+  <div class="modal">
+    <div class="modal__header">
+      <h2 class="modal__title" id="modalAddTitle">Adicionar música</h2>
+      <button class="modal__close" data-close="modalAddSong" aria-label="Fechar">✕</button>
     </div>
 
-    <script type="module" src="./js/main.js"></script>
-</body>
+    <!-- Busca Spotify -->
+    <div class="spotify-search">
+      <div class="spotify-search__label">
+        <span class="spotify-dot"></span> Buscar no Spotify
+      </div>
+      <input type="search" id="spotifyQuery" class="form-input" placeholder="Nome da música ou artista…" autocomplete="off">
+      <span id="spotifySpinner" class="spinner" hidden></span>
+      <div id="spotifyResults" hidden></div>
+    </div>
 
+    <form id="songForm" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="songName">Nome da música *</label>
+        <input type="text" id="songName" class="form-input" required autocomplete="off" placeholder="Ex: Bohemian Rhapsody">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="songArtist">Artista / banda</label>
+        <input type="text" id="songArtist" class="form-input" autocomplete="off" placeholder="Ex: Queen">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="songBpm">BPM</label>
+          <input type="number" id="songBpm" class="form-input" min="20" max="300" placeholder="120">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="songKey">Tom</label>
+          <select id="songKey" class="form-select"><option value="">—</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="songDuration">Duração (mm:ss)</label>
+          <input type="text" id="songDuration" class="form-input mono" placeholder="3:45">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="songNotes">Notas</label>
+          <input type="text" id="songNotes" class="form-input" placeholder="Ex: Solo em E…">
+        </div>
+      </div>
+      <input type="hidden" id="songAlbumArt">
+      <input type="hidden" id="songSpotifyId">
+      <div class="form-actions">
+        <button type="button" class="btn btn--ghost" data-close="modalAddSong">Cancelar</button>
+        <button type="submit" class="btn btn--primary">Adicionar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Editar música -->
+<div id="modalEditSong" class="modal-backdrop" hidden aria-hidden="true" role="dialog" aria-labelledby="modalEditTitle">
+  <div class="modal">
+    <div class="modal__header">
+      <h2 class="modal__title" id="modalEditTitle">Editar música</h2>
+      <button class="modal__close" data-close="modalEditSong" aria-label="Fechar">✕</button>
+    </div>
+    <form id="songEditForm" novalidate>
+      <input type="hidden" id="editSongId">
+      <div class="form-group">
+        <label class="form-label" for="editSongName">Nome da música *</label>
+        <input type="text" id="editSongName" class="form-input" required autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="editSongArtist">Artista / banda</label>
+        <input type="text" id="editSongArtist" class="form-input" autocomplete="off">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="editSongBpm">BPM</label>
+          <input type="number" id="editSongBpm" class="form-input" min="20" max="300">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="editSongKey">Tom</label>
+          <select id="editSongKey" class="form-select"><option value="">—</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="editSongDuration">Duração (mm:ss)</label>
+          <input type="text" id="editSongDuration" class="form-input mono" placeholder="3:45">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="editSongNotes">Notas</label>
+          <input type="text" id="editSongNotes" class="form-input">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn--ghost" data-close="modalEditSong">Cancelar</button>
+        <button type="submit" class="btn btn--primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Compartilhar -->
+<div id="modalShare" class="modal-backdrop" hidden aria-hidden="true" role="dialog" aria-labelledby="modalShareTitle">
+  <div class="modal">
+    <div class="modal__header">
+      <h2 class="modal__title" id="modalShareTitle">Compartilhar setlist</h2>
+      <button class="modal__close" data-close="modalShare" aria-label="Fechar">✕</button>
+    </div>
+    <p class="form-label" style="margin-bottom:12px">Qualquer pessoa com este link pode ver a setlist (somente leitura).</p>
+    <div class="share-url-box" id="shareUrlDisplay"></div>
+    <div class="form-actions" style="border:none;margin-top:0">
+      <button class="btn btn--primary" id="btnCopyShare">Copiar link</button>
+      <button class="btn btn--ghost" data-close="modalShare">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Importar setlist compartilhada -->
+<div id="modalShared" class="modal-backdrop" hidden aria-hidden="true" role="dialog" aria-labelledby="modalSharedTitle">
+  <div class="modal">
+    <div class="modal__header">
+      <h2 class="modal__title" id="modalSharedTitle">Setlist recebida</h2>
+      <button class="modal__close" data-close="modalShared" aria-label="Fechar">✕</button>
+    </div>
+    <p class="form-label" style="margin-bottom:16px">Você recebeu uma setlist. Deseja importá-la?</p>
+    <div id="sharedPreview" style="margin-bottom:20px;font-size:.88rem;color:var(--text-primary)"></div>
+    <div class="form-actions" style="border:none;margin-top:0">
+      <button class="btn btn--primary" id="btnImportShared">Importar setlist</button>
+      <button class="btn btn--ghost" data-close="modalShared">Ignorar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Configurações (Spotify) -->
+<div id="modalSettings" class="modal-backdrop" hidden aria-hidden="true" role="dialog" aria-labelledby="modalSettingsTitle">
+  <div class="modal">
+    <div class="modal__header">
+      <h2 class="modal__title" id="modalSettingsTitle">Configurações</h2>
+      <button class="modal__close" data-close="modalSettings" aria-label="Fechar">✕</button>
+    </div>
+    <p class="form-label" style="margin-bottom:16px;line-height:1.6">
+      Para busca automática no Spotify, crie um app gratuito em
+      <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener" style="color:var(--gold-light)">developer.spotify.com</a>
+      e cole as credenciais abaixo.
+    </p>
+    <form id="settingsForm">
+      <div class="form-group">
+        <label class="form-label" for="settingsSpotifyId">Spotify Client ID</label>
+        <input type="text" id="settingsSpotifyId" class="form-input mono" autocomplete="off" placeholder="32 caracteres…">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="settingsSpotifySecret">Spotify Client Secret</label>
+        <input type="password" id="settingsSpotifySecret" class="form-input mono" autocomplete="off" placeholder="32 caracteres…">
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn--ghost" data-close="modalSettings">Cancelar</button>
+        <button type="submit" class="btn btn--primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- PWA Service Worker -->
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+</script>
+
+<script type="module" src="./js/main.js"></script>
+</body>
 </html>
+ENDHTML
+echo "done"
