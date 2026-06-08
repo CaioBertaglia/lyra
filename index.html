@@ -1,4 +1,3 @@
-cat > /home/claude/lyra-v2/index.html << 'ENDHTML'
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -12,31 +11,31 @@ cat > /home/claude/lyra-v2/index.html << 'ENDHTML'
   <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
-
+ 
 <!-- ═══════════════ SHOW STAGE (tela cheia ao vivo) ═══════════════ -->
 <div id="showStage" class="show-stage" hidden aria-hidden="true" role="dialog" aria-label="Show ao vivo">
   <p class="show-stage__elapsed mono" id="showElapsed">00:00</p>
   <p class="show-stage__song-num mono" id="showSongNum">1 / 0</p>
   <p class="show-stage__song-name" id="showCurrentSong">—</p>
   <p class="show-stage__song-elapsed mono" id="showSongElapsed">00:00</p>
-
+ 
   <div class="show-stage__progress-track">
     <div class="show-stage__progress-bar" id="showSongProgress"></div>
   </div>
-
+ 
   <div class="show-stage__controls">
     <button class="btn btn--secondary btn--sm" id="btnStagePrev" aria-label="Música anterior">◀</button>
     <button class="btn btn--primary"           id="btnStagePause" aria-label="Pausar">⏸</button>
     <button class="btn btn--secondary btn--sm" id="btnStageNext" aria-label="Próxima música">▶</button>
     <button class="btn btn--danger btn--sm"    id="btnStageEnd">Encerrar show</button>
   </div>
-
+ 
   <ul class="stage-song-list" id="stageSongList" aria-label="Lista de músicas"></ul>
 </div>
-
+ 
 <!-- ═══════════════ APP ═══════════════ -->
 <div class="app">
-
+ 
   <!-- Header -->
   <header class="header">
     <div class="logo-area">
@@ -59,12 +58,13 @@ cat > /home/claude/lyra-v2/index.html << 'ENDHTML'
       </div>
     </div>
     <div class="header__actions">
+      <button class="btn btn--ghost btn--sm" id="btnHistory" aria-label="Histórico">🕐 Histórico</button>
       <button class="btn btn--ghost btn--sm" id="btnSettings" aria-label="Configurações">⚙ Config</button>
       <button class="btn btn--secondary btn--sm" id="btnShare" aria-label="Compartilhar">↗ Compartilhar</button>
       <button class="btn btn--primary" id="btnStartShow">▶ Iniciar Show</button>
     </div>
   </header>
-
+ 
   <!-- Stats -->
   <div class="stats-grid">
     <div class="stat-card">
@@ -93,57 +93,58 @@ cat > /home/claude/lyra-v2/index.html << 'ENDHTML'
       <div class="progress-bar"><div class="progress-fill" id="barDuration" style="width:100%"></div></div>
     </div>
   </div>
-
+ 
   <!-- Abas de setlist -->
   <div class="setlist-tabs-wrap">
     <div class="setlist-tabs" id="setlistTabs" role="tablist" aria-label="Setlists"></div>
     <button class="btn btn--ghost btn--sm" id="btnNewSetlist" title="Nova setlist">+ Nova</button>
     <button class="btn btn--ghost btn--sm" id="btnDeleteSetlist" title="Remover setlist atual">✕</button>
   </div>
-
+ 
   <!-- Meta da setlist (editável) -->
   <div class="setlist-meta">
-    <span class="setlist-meta__name" id="setlistName" role="button" tabindex="0" title="Clique para editar">—</span>
-    <span class="setlist-meta__venue" id="setlistVenue" role="button" tabindex="0" title="Clique para editar">—</span>
-    <span class="setlist-meta__date" id="setlistDate" role="button" tabindex="0" title="Clique para editar">—</span>
+    <span class="setlist-meta__name" id="setlistName">—</span>
+    <span class="setlist-meta__venue" id="setlistVenue">—</span>
+    <span class="setlist-meta__date" id="setlistDate">—</span>
+    <button class="btn btn--ghost btn--sm" id="btnEditSetlist" title="Editar nome, local e data">✎</button>
   </div>
-
+ 
   <!-- Toolbar -->
   <div class="toolbar">
     <button class="btn btn--primary btn--sm" id="btnAddSong">+ Adicionar música</button>
   </div>
-
+ 
   <!-- Lista de músicas -->
   <div class="list-header">
     <h2>📋 Setlist</h2>
     <div class="counter" id="sectionCount">0 músicas</div>
   </div>
-
+ 
   <ul class="music-list" id="musicList" aria-label="Lista de músicas"></ul>
-
+ 
   <div id="emptyState" class="empty-state" hidden>
     <span>🎸</span>
     <p>Nenhuma música ainda.<br>Clique em "Adicionar música" para começar.</p>
   </div>
-
+ 
   <!-- Histórico de shows -->
   <section class="history-section">
     <p class="history-title">Histórico de shows</p>
     <ul class="history-list" id="historyList"></ul>
   </section>
-
+ 
   <!-- Footer -->
   <div class="footer">
     <div>Feito por <span>Caio Bertaglia</span> — Lyra © 2025</div>
     <div>LYRA v2.0</div>
   </div>
 </div>
-
+ 
 <!-- Toast container -->
 <div id="toast-container" aria-live="polite"></div>
-
+ 
 <!-- ═══════════════ MODAIS ═══════════════ -->
-
+ 
 <!-- Modal: Adicionar música -->
 <div id="modalAddSong" class="modal-backdrop" hidden aria-hidden="true" role="dialog" aria-labelledby="modalAddTitle">
   <div class="modal">
@@ -151,7 +152,7 @@ cat > /home/claude/lyra-v2/index.html << 'ENDHTML'
       <h2 class="modal__title" id="modalAddTitle">Adicionar música</h2>
       <button class="modal__close" data-close="modalAddSong" aria-label="Fechar">✕</button>
     </div>
-
+ 
     <!-- Busca Spotify -->
     <div class="spotify-search">
       <div class="spotify-search__label">
@@ -161,7 +162,7 @@ cat > /home/claude/lyra-v2/index.html << 'ENDHTML'
       <span id="spotifySpinner" class="spinner" hidden></span>
       <div id="spotifyResults" hidden></div>
     </div>
-
+ 
     <form id="songForm" novalidate>
       <div class="form-group">
         <label class="form-label" for="songName">Nome da música *</label>
@@ -200,7 +201,7 @@ cat > /home/claude/lyra-v2/index.html << 'ENDHTML'
     </form>
   </div>
 </div>
-
+ 
 <!-- Modal: Editar música -->
 <div id="modalEditSong" class="modal-backdrop" hidden aria-hidden="true" role="dialog" aria-labelledby="modalEditTitle">
   <div class="modal">
@@ -245,7 +246,7 @@ cat > /home/claude/lyra-v2/index.html << 'ENDHTML'
     </form>
   </div>
 </div>
-
+ 
 <!-- Modal: Compartilhar -->
 <div id="modalShare" class="modal-backdrop" hidden aria-hidden="true" role="dialog" aria-labelledby="modalShareTitle">
   <div class="modal">
@@ -261,7 +262,7 @@ cat > /home/claude/lyra-v2/index.html << 'ENDHTML'
     </div>
   </div>
 </div>
-
+ 
 <!-- Modal: Importar setlist compartilhada -->
 <div id="modalShared" class="modal-backdrop" hidden aria-hidden="true" role="dialog" aria-labelledby="modalSharedTitle">
   <div class="modal">
@@ -277,7 +278,7 @@ cat > /home/claude/lyra-v2/index.html << 'ENDHTML'
     </div>
   </div>
 </div>
-
+ 
 <!-- Modal: Configurações (Spotify) -->
 <div id="modalSettings" class="modal-backdrop" hidden aria-hidden="true" role="dialog" aria-labelledby="modalSettingsTitle">
   <div class="modal">
@@ -306,16 +307,98 @@ cat > /home/claude/lyra-v2/index.html << 'ENDHTML'
     </form>
   </div>
 </div>
-
+ 
+<!-- ═══════════════ MODAL: Confirmar exclusão ═══════════════ -->
+<div id="modalConfirm" class="modal-backdrop" hidden aria-hidden="true" role="alertdialog" aria-labelledby="modalConfirmTitle">
+  <div class="modal modal--sm">
+    <div class="modal__header">
+      <h2 class="modal__title" id="modalConfirmTitle">Confirmar</h2>
+    </div>
+    <p class="modal__body" id="modalConfirmMsg">Tem certeza?</p>
+    <div class="form-actions" style="border:none;margin-top:24px;padding-top:0">
+      <button class="btn btn--ghost" id="btnConfirmNo">Cancelar</button>
+      <button class="btn btn--danger" id="btnConfirmYes">Remover</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ═══════════════ MODAL: Editar setlist ═══════════════ -->
+<div id="modalEditSetlist" class="modal-backdrop" hidden aria-hidden="true" role="dialog" aria-labelledby="modalEditSetlistTitle">
+  <div class="modal modal--sm">
+    <div class="modal__header">
+      <h2 class="modal__title" id="modalEditSetlistTitle">Editar setlist</h2>
+      <button class="modal__close" data-close="modalEditSetlist" aria-label="Fechar">✕</button>
+    </div>
+    <form id="editSetlistForm">
+      <div class="form-group">
+        <label class="form-label" for="editSetlistName">Nome</label>
+        <input type="text" id="editSetlistName" class="form-input" required placeholder="Nome da setlist">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="editSetlistVenue">Local</label>
+        <input type="text" id="editSetlistVenue" class="form-input" placeholder="Ex: Clube do Choro, SP">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="editSetlistDate">Data do show</label>
+        <input type="date" id="editSetlistDate" class="form-input">
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn--ghost" data-close="modalEditSetlist">Cancelar</button>
+        <button type="submit" class="btn btn--primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+ 
+<!-- ═══════════════ MODAL: Nova setlist ═══════════════ -->
+<div id="modalNewSetlist" class="modal-backdrop" hidden aria-hidden="true" role="dialog" aria-labelledby="modalNewSetlistTitle">
+  <div class="modal modal--sm">
+    <div class="modal__header">
+      <h2 class="modal__title" id="modalNewSetlistTitle">Nova setlist</h2>
+      <button class="modal__close" data-close="modalNewSetlist" aria-label="Fechar">✕</button>
+    </div>
+    <form id="newSetlistForm">
+      <div class="form-group">
+        <label class="form-label" for="newSetlistName">Nome</label>
+        <input type="text" id="newSetlistName" class="form-input" required placeholder="Ex: Show de Natal">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="newSetlistVenue">Local (opcional)</label>
+        <input type="text" id="newSetlistVenue" class="form-input" placeholder="Ex: Bar do Zé, RJ">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="newSetlistDate">Data (opcional)</label>
+        <input type="date" id="newSetlistDate" class="form-input">
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn--ghost" data-close="modalNewSetlist">Cancelar</button>
+        <button type="submit" class="btn btn--primary">Criar</button>
+      </div>
+    </form>
+  </div>
+</div>
+ 
+<!-- ═══════════════ TELA: Histórico de shows (fullscreen) ═══════════════ -->
+<div id="historyScreen" class="side-screen" hidden aria-hidden="true" role="dialog" aria-label="Histórico de shows">
+  <div class="side-screen__header">
+    <h2 class="side-screen__title">🎤 Histórico de Shows</h2>
+    <button class="btn btn--ghost btn--sm" id="btnCloseHistory">✕ Fechar</button>
+  </div>
+  <ul class="history-list" id="historyListScreen" aria-label="Shows arquivados"></ul>
+  <div id="historyScreenEmpty" class="empty-state" hidden>
+    <span>🎸</span>
+    <p>Nenhum show arquivado ainda.<br>Inicie um show e encerre para criar o histórico.</p>
+  </div>
+</div>
+ 
 <!-- PWA Service Worker -->
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
 </script>
-
+ 
 <script type="module" src="./js/main.js"></script>
 </body>
 </html>
-ENDHTML
-echo "done"
+ 
